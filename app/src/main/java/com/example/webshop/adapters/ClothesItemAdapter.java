@@ -1,7 +1,6 @@
-package com.example.webshop;
+package com.example.webshop.adapters;
 
 import android.content.Context;
-import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.webshop.R;
+import com.example.webshop.ShopListActivity;
 import com.example.webshop.model.ClothesItem;
+import com.example.webshop.tasks.DownloadImageTask;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,6 +88,7 @@ public class ClothesItemAdapter extends RecyclerView.Adapter<ClothesItemAdapter.
 
 
     class ViewHolder extends RecyclerView.ViewHolder {
+        private final TextView idText;
         private final TextView titleText;
         private final TextView descriptionText;
         private final TextView priceText;
@@ -93,21 +96,21 @@ public class ClothesItemAdapter extends RecyclerView.Adapter<ClothesItemAdapter.
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            idText = itemView.findViewById(R.id.idText);
             titleText = itemView.findViewById(R.id.itemTitle);
             descriptionText = itemView.findViewById(R.id.itemDescription);
             priceText = itemView.findViewById(R.id.itemPrice);
             itemImage = itemView.findViewById(R.id.itemPicture);
 
-            itemView.findViewById(R.id.to_cart).setOnClickListener((view -> ((ShopListActivity) context).updateCartIndicator()));
+            itemView.findViewById(R.id.to_cart).setOnClickListener((view -> ((ShopListActivity) context).updateCartIndicator((String) idText.getText())));
         }
 
         public void bindTo(ClothesItem currentItem) {
+            idText.setText(currentItem.getId());
             titleText.setText(currentItem.getName());
             descriptionText.setText(currentItem.getDescription());
-            priceText.setText(currentItem.getPrice());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                itemImage.setImageIcon(Icon.createWithContentUri("https://images.pexels.com/photos/9035242/pexels-photo-9035242.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"));
-            }
+            priceText.setText(String.valueOf(currentItem.getPrice()));
+            new DownloadImageTask(itemImage).execute(currentItem.getPictureUrl());
 
         }
     }

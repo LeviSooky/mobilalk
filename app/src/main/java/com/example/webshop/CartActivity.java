@@ -1,0 +1,107 @@
+package com.example.webshop;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.webshop.adapters.CartItemsAdapter;
+import com.example.webshop.model.CartItem;
+import com.example.webshop.model.CartProvider;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+public class CartActivity extends AppCompatActivity {
+    private final String LOG_TAG = CartActivity.class.getName();
+
+    private TextView countTextView;
+    private FirebaseUser user;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore fireStore;
+    private CollectionReference items;
+    private RecyclerView recyclerView;
+    CartItemsAdapter adapter;
+    private List<CartItem> cartItemsList;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_cart_list);
+        mAuth = FirebaseAuth.getInstance();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        fireStore = FirebaseFirestore.getInstance();
+        checkUserLogin();
+        recyclerView = findViewById(R.id.cartRecyclerView);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 1));
+        items = fireStore.collection("clothes");
+        List<CartItem> result = new ArrayList<>();
+        adapter = new CartItemsAdapter(this, result); //TODO
+        recyclerView.setAdapter(adapter);
+        try {
+            result = new CartProvider.GetCartItemsAsync().execute(adapter).get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.menu_cart, menu);
+        countTextView = findViewById(R.id.view_alert_count_textview);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.logout:
+                FirebaseAuth.getInstance().signOut();
+                finish();
+                return true;
+            case R.id.cart:
+                switchActivity(CartActivity.class);
+                return true;
+            case R.id.back:
+                switchActivity(ShopListActivity.class);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private <T extends AppCompatActivity> void switchActivity(Class<T> activity) {
+        Intent intent = new Intent(this, activity);
+        startActivity(intent);
+    }
+
+    private void checkUserLogin() {
+        if (user != null) {
+            Log.d(LOG_TAG, "Authenticated user!");
+        } else {
+            Log.d(LOG_TAG, "Unauthenticated user!");
+            finish();
+        }
+    }
+
+}

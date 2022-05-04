@@ -3,10 +3,12 @@ package com.example.webshop;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -17,6 +19,8 @@ import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.webshop.adapters.ClothesItemAdapter;
+import com.example.webshop.model.CartProvider;
 import com.example.webshop.model.ClothesItem;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -37,9 +41,8 @@ public class ShopListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private List<ClothesItem> itemList;
     private ClothesItemAdapter adapter;
-    private FrameLayout cartIndicator;
     private TextView countTextView;
-
+    private FrameLayout redCircle;
     private final int gridNumber = 1;
     private int cartCounter = 0;
 
@@ -49,16 +52,9 @@ public class ShopListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shop_list);
         mAuth = FirebaseAuth.getInstance();
-        // mAuth.signOut();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (user != null) {
-            Log.d(LOG_TAG, "Authenticated user!");
-        } else {
-            Log.d(LOG_TAG, "Unauthenticated user!");
-            finish();
-        }
-
+        checkUserLogin();
         recyclerView = findViewById(R.id.itemsRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, gridNumber));
         itemList = new ArrayList<>();
@@ -70,20 +66,24 @@ public class ShopListActivity extends AppCompatActivity {
             for (QueryDocumentSnapshot item : queryDocumentSnapshots) {
                 itemList.add(item.toObject(ClothesItem.class));
             }
+            adapter.notifyDataSetChanged();
         });
-        initializeData();
     }
 
-    private void initializeData() {
-        String[] itemList;
-        String[] itemDescription;
-        String[] itemPrice;
+    private void checkUserLogin() {
+        if (user != null) {
+            Log.d(LOG_TAG, "Authenticated user!");
+        } else {
+            Log.d(LOG_TAG, "Unauthenticated user!");
+            finish();
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.menu_list, menu);
+        countTextView = findViewById(R.id.view_alert_count_textview);
         MenuItem menuItem = menu.findItem(R.id.search_bar);
         SearchView searchView = ((SearchView) MenuItemCompat.getActionView(menuItem));
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -98,8 +98,24 @@ public class ShopListActivity extends AppCompatActivity {
                 return false;
             }
         });
-
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem alertMenuItem = menu.findItem(R.id.cart);
+        FrameLayout rootView = (FrameLayout) alertMenuItem.getActionView();
+
+        redCircle = rootView.findViewById(R.id.view_alert_red_circle);
+        countTextView = rootView.findViewById(R.id.view_alert_count_textview);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(alertMenuItem);
+            }
+        });
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -112,20 +128,22 @@ public class ShopListActivity extends AppCompatActivity {
                 return true;
             case R.id.cart:
                 Log.d(LOG_TAG, "Cart clicked!");
+                Intent intent = new Intent(this, CartActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    public void updateCartIndicator() {
+    public void updateCartIndicator(String id) {
+        CartProvider.addToCart(Integer.parseInt(id));
         cartCounter = (cartCounter + 1);
         if (0 < cartCounter) {
             countTextView.setText(String.valueOf(cartCounter));
         } else {
             countTextView.setText("");
         }
-
-        cartIndicator.setVisibility((cartCounter > 0) ? VISIBLE : GONE);
+        redCircle.setVisibility((cartCounter > 0) ? VISIBLE : GONE);
     }
 }

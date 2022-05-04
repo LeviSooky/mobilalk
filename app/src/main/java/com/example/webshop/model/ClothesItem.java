@@ -1,6 +1,7 @@
 package com.example.webshop.model;
 
 public class ClothesItem {
+    private String id;
     private String name;
     private String description;
     private int price;
@@ -28,6 +29,14 @@ public class ClothesItem {
 
     public void setPrice(int price) {
         this.price = price;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getPictureUrl() {
