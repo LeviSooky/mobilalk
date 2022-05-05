@@ -108,7 +108,9 @@ public class ShopListActivity extends AppCompatActivity {
 
         redCircle = rootView.findViewById(R.id.view_alert_red_circle);
         countTextView = rootView.findViewById(R.id.view_alert_count_textview);
-
+        int cartSize = CartProvider.getCartSize();
+        cartCounter = cartSize;
+        hideOrRevealIndicator();
         rootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,7 +140,11 @@ public class ShopListActivity extends AppCompatActivity {
 
     public void updateCartIndicator(String id) {
         CartProvider.addToCart(Integer.parseInt(id));
-        cartCounter = (cartCounter + 1);
+        cartCounter = CartProvider.getCartSize();
+        hideOrRevealIndicator();
+    }
+
+    private void hideOrRevealIndicator() {
         if (0 < cartCounter) {
             countTextView.setText(String.valueOf(cartCounter));
         } else {

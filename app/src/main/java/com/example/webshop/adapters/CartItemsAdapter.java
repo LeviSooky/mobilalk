@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.webshop.R;
-import com.example.webshop.ShopListActivity;
 import com.example.webshop.model.CartItem;
 import com.example.webshop.model.CartProvider;
 import com.example.webshop.tasks.DownloadImageTask;
@@ -55,30 +54,49 @@ public class CartItemsAdapter extends RecyclerView.Adapter<CartItemsAdapter.View
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            idText = itemView.findViewById(R.id.idText);
-            titleText = itemView.findViewById(R.id.itemTitle);
+            idText = itemView.findViewById(R.id.cartIdText);
+            titleText = itemView.findViewById(R.id.cartItemTitle);
             quantityText = itemView.findViewById(R.id.quantity);
-            priceText = itemView.findViewById(R.id.itemPrice);
-            itemImage = itemView.findViewById(R.id.itemPicture);
+            priceText = itemView.findViewById(R.id.cartItemPrice);
+            itemImage = itemView.findViewById(R.id.cartItemPicture);
             totalPriceText = itemView.findViewById(R.id.itemTotalPrice);
 
-            itemView.findViewById(R.id.plusOne).setOnClickListener((view -> ((ShopListActivity) context).updateCartIndicator((String) idText.getText())));
+            itemView.findViewById(R.id.plusOne).setOnClickListener((view -> addOne(idText.getText())));
             itemView.findViewById(R.id.minusOne).setOnClickListener((view -> removeOne(idText.getText())));
         }
 
-        private void removeOne(CharSequence text) {
-            CartProvider.removeFromCart(Integer.parseInt(text.toString()));
+        private void removeOne(CharSequence id) {
+            CartProvider.removeFromCart(Integer.parseInt(id.toString()));
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).getItem().getId().equals(id)) {
+                    if (items.get(i).getQuantity() == 1) {
+                        items.remove(i);
+                    } else {
+                        items.get(i).setQuantity(items.get(i).getQuantity() - 1);
+                    }
+                }
+            }
             notifyDataSetChanged();
         }
 
         public void bindTo(CartItem currentItem) {
             idText.setText(currentItem.getItem().getId());
             titleText.setText(currentItem.getItem().getName());
-            quantityText.setText(currentItem.getQuantity());
+            quantityText.setText(String.valueOf(currentItem.getQuantity()));
             priceText.setText(String.valueOf(currentItem.getItem().getPrice()));
             totalPriceText.setText(String.valueOf((currentItem.getItem().getPrice() * currentItem.getQuantity())));
             new DownloadImageTask(itemImage).execute(currentItem.getItem().getPictureUrl());
 
         }
+    }
+
+    private void addOne(CharSequence id) {
+        CartProvider.addToCart(Integer.parseInt(id.toString()));
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getItem().getId().equals(id)) {
+                items.get(i).setQuantity(items.get(i).getQuantity() + 1);
+            }
+        }
+        notifyDataSetChanged();
     }
 }

@@ -3,7 +3,6 @@ package com.example.webshop;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -36,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     EditText userNameET;
     EditText passwordET;
 
+    LoadingDialog loadingDialog;
     private SharedPreferences preferences;
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
@@ -56,13 +56,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        StrictMode.enableDefaults();
 
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
 
         userNameET = findViewById(R.id.editTextEmail);
         passwordET = findViewById(R.id.editTextPassword);
+        loadingDialog = new LoadingDialog(MainActivity.this);
 
         preferences = getSharedPreferences(PREF_KEY, MODE_PRIVATE);
 
@@ -111,12 +111,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
+        loadingDialog.startLoadingAnimation();
         String username = userNameET.getText().toString();
         String password = passwordET.getText().toString();
 
         mAuth.signInWithEmailAndPassword(username, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
+                loadingDialog.dismissDialog();
                 if (task.isSuccessful()) {
                     Log.d(LOG_TAG, "Login done!");
                     goShopping();
@@ -127,23 +129,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void loginAsGuest(View view) {
-        mAuth.signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    Log.d(LOG_TAG, "Login as guest done!");
-                    goShopping();
-                } else {
-                    Toast.makeText(MainActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-    }
-
     public void loginWithGoogle(View view) {
+        loadingDialog.startLoadingAnimation();
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
+        loadingDialog.dismissDialog();
     }
 
     private void goShopping() {

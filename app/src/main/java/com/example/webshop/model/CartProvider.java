@@ -33,6 +33,14 @@ public class CartProvider {
         }
     }
 
+    public static int getCartSize() {
+        int cartSize = 0;
+        for (Integer value : cartItems.values()) {
+            cartSize += value;
+        }
+        return cartSize;
+    }
+
     public static void clearCart() {
         cartItems.clear();
     }
@@ -74,6 +82,11 @@ public class CartProvider {
                 });
             }
             return result;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
         }
     }
 }
