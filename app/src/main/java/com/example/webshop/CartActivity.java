@@ -20,6 +20,7 @@ import com.example.webshop.model.CartItem;
 import com.example.webshop.model.CartProvider;
 import com.example.webshop.model.ClothesItem;
 import com.example.webshop.model.Order;
+import com.example.webshop.services.NotificationService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -64,6 +65,14 @@ public class CartActivity extends AppCompatActivity {
         adapter = new CartItemsAdapter(this, result); //TODO
         recyclerView.setAdapter(adapter);
         getCartItemsFromFB();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (!CartProvider.cartItems.isEmpty()) {
+            startService(new Intent(this, NotificationService.class));
+        }
     }
 
     public void getCartItemsFromFB() {

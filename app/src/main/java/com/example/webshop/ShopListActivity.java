@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.webshop.adapters.ClothesItemAdapter;
 import com.example.webshop.model.CartProvider;
 import com.example.webshop.model.ClothesItem;
+import com.example.webshop.services.NotificationService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -68,6 +69,14 @@ public class ShopListActivity extends AppCompatActivity {
             }
             adapter.notifyDataSetChanged();
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (!CartProvider.cartItems.isEmpty()) {
+            startService(new Intent(this, NotificationService.class));
+        }
     }
 
     private void checkUserLogin() {
