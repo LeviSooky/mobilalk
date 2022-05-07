@@ -21,7 +21,6 @@ public class NotificationService extends Service {
     Timer timer;
     TimerTask timerTask;
     String TAG = "Timers";
-    int Your_X_SECS = 5;
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -48,13 +47,12 @@ public class NotificationService extends Service {
         super.onDestroy();
     }
 
-    //we are going to use a handler to be able to run in our TimerTask
     final Handler handler = new Handler();
 
     public void startTimer() {
         timer = new Timer();
         initializeTimerTask();
-        timer.schedule(timerTask, 5000, Your_X_SECS * 1000); //
+        timer.schedule(timerTask, 5000, Long.MAX_VALUE);
     }
 
     public void stopTimerTask() {

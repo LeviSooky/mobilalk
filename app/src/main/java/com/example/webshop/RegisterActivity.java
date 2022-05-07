@@ -38,14 +38,6 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
 
         mAuth = FirebaseAuth.getInstance();
 
-        // Bundle bundle = getIntent().getExtras();
-        // int secret_key = bundle.getInt("SECRET_KEY");
-        // int secret_key = getIntent().getIntExtra("SECRET_KEY", 0);
-
-        /*if (secret_key != 99) {
-            finish();
-        }*/
-
         userEmailEditText = findViewById(R.id.userEmailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         passwordConfirmEditText = findViewById(R.id.passwordAgainEditText);
@@ -76,8 +68,6 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
         String phone = phoneEditText.getText().toString();
 
         Log.i(LOG_TAG, "Regisztrált: " + userName + ", e-mail: " + email);
-        // startShopping();
-        // TODO: A regisztrációs funkcionalitást meg kellene valósítani egyszer.
 
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
@@ -86,8 +76,8 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
                     Log.d(LOG_TAG, "User created successfully");
                     startShopping();
                 } else {
-                    Log.d(LOG_TAG, "User was't created successfully:", task.getException());
-                    Toast.makeText(RegisterActivity.this, "User was't created successfully:", Toast.LENGTH_LONG).show();
+                    Log.d(LOG_TAG, "User wasn't created successfully:", task.getException());
+                    Toast.makeText(RegisterActivity.this, "User wasn't created successfully:", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -97,7 +87,7 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
         finish();
     }
 
-    private void startShopping(/* registered used class */) {
+    private void startShopping() {
         Intent intent = new Intent(this, ShopListActivity.class);
         intent.putExtra("SECRET_KEY", SECRET_KEY);
         startActivity(intent);
@@ -107,36 +97,6 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
     protected void onStart() {
         super.onStart();
         Log.i(LOG_TAG, "onStart");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.i(LOG_TAG, "onStop");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(LOG_TAG, "onDestroy");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.i(LOG_TAG, "onPause");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(LOG_TAG, "onResume");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.i(LOG_TAG, "onRestart");
     }
 
     @Override

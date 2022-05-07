@@ -115,16 +115,13 @@ public class MainActivity extends AppCompatActivity {
         String username = userNameET.getText().toString();
         String password = passwordET.getText().toString();
 
-        mAuth.signInWithEmailAndPassword(username, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                loadingDialog.dismissDialog();
-                if (task.isSuccessful()) {
-                    Log.d(LOG_TAG, "Login done!");
-                    goShopping();
-                } else {
-                    Toast.makeText(MainActivity.this, "Invalid email or password!", Toast.LENGTH_LONG).show();
-                }
+        mAuth.signInWithEmailAndPassword(username, password).addOnCompleteListener(this, task -> {
+            loadingDialog.dismissDialog();
+            if (task.isSuccessful()) {
+                Log.d(LOG_TAG, "Login done!");
+                goShopping();
+            } else {
+                Toast.makeText(MainActivity.this, "Invalid email or password!", Toast.LENGTH_LONG).show();
             }
         });
     }
