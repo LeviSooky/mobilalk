@@ -84,7 +84,7 @@ public class NotificationService extends Service {
         mBuilder.setAutoCancel(true);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             int importance = NotificationManager.IMPORTANCE_HIGH;
-            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "NOTIFICATION_CHANNEL_NAME", importance);
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "KOSAR", importance);
             mBuilder.setChannelId(NOTIFICATION_CHANNEL_ID);
             assert mNotificationManager != null;
             mNotificationManager.createNotificationChannel(notificationChannel);

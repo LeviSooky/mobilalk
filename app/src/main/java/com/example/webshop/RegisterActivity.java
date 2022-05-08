@@ -9,20 +9,19 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
+import com.example.webshop.model.UserDetail;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class RegisterActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = RegisterActivity.class.getName();
     private static final String PREF_KEY = RegisterActivity.class.getPackage().toString();
     private static final int SECRET_KEY = 99;
+    private final String EMAIL_REGEX = "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@"
+            + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$";
 
-    EditText userNameEditText;
     EditText userEmailEditText;
     EditText passwordEditText;
     EditText passwordConfirmEditText;
@@ -30,6 +29,7 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
 
     private SharedPreferences preferences;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore firestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +37,12 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
         setContentView(R.layout.activity_register);
 
         mAuth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
 
         userEmailEditText = findViewById(R.id.userEmailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         passwordConfirmEditText = findViewById(R.id.passwordAgainEditText);
+        phoneEditText = findViewById(R.id.phoneEditText);
 
         preferences = getSharedPreferences(PREF_KEY, MODE_PRIVATE);
         String userName = preferences.getString("userName", "");
@@ -55,32 +57,33 @@ public class RegisterActivity extends AppCompatActivity implements AdapterView.O
     }
 
     public void register(View view) {
-        String userName = userNameEditText.getText().toString();
         String email = userEmailEditText.getText().toString();
-        String password = passwordEditText.getText().toString();
-        String passwordConfirm = passwordConfirmEditText.getText().toString();
-
-        if (!password.equals(passwordConfirm)) {
-            Log.e(LOG_TAG, "Nem egyenlő a jelszó és a megerősítése.");
+        String phone = phoneEditText.getText().toString();
+        if (!email.matches(EMAIL_REGEX)) {
+            Toast.makeText(RegisterActivity.this, "Helytelen e-mail cím!", Toast.LENGTH_LONG).show();
             return;
         }
-
-        String phone = phoneEditText.getText().toString();
-
-        Log.i(LOG_TAG, "Regisztrált: " + userName + ", e-mail: " + email);
-
-        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    Log.d(LOG_TAG, "User created successfully");
-                    startShopping();
-                } else {
-                    Log.d(LOG_TAG, "User wasn't created successfully:", task.getException());
-                    Toast.makeText(RegisterActivity.this, "User wasn't created successfully:", Toast.LENGTH_LONG).show();
-                }
+        if (phone.isEmpty()) {
+            Toast.makeText(RegisterActivity.this, "A telefonszám megadása kötelező!", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String password = passwordEditText.getText().toString();
+        String passwordConfirm = passwordConfirmEditText.getText().toString();
+        if (!password.equals(passwordConfirm)) {
+            Toast.makeText(RegisterActivity.this, "A két jelszó nem egyezik!", Toast.LENGTH_LONG).show();
+            return;
+        }
+        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                UserDetail userDetail = new UserDetail();
+                userDetail.setUID(mAuth.getUid());
+                userDetail.setPhoneNumber(phone);
+                firestore.collection("userDetails").add(userDetail);
+                startShopping();
+            } else {
+                Toast.makeText(RegisterActivity.this, "Sikertelen regisztráció", Toast.LENGTH_LONG).show();
             }
-        });
+        }).addOnFailureListener(task -> Log.e(LOG_TAG, task.getMessage()));
     }
 
     public void cancel(View view) {
